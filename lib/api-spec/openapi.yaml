@@ -1,22 +1,29 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: SalesMemory AI API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: clients
+    description: Client management
+  - name: interactions
+    description: Interaction logging
+  - name: tasks
+    description: AI task generation
+  - name: analytics
+    description: Cost and usage analytics
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +31,272 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /clients:
+    get:
+      operationId: listClients
+      tags: [clients]
+      summary: List all clients
+      responses:
+        "200":
+          description: List of clients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Client"
+    post:
+      operationId: createClient
+      tags: [clients]
+      summary: Create a new client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+
+  /clients/{id}:
+    get:
+      operationId: getClient
+      tags: [clients]
+      summary: Get a client with their interactions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Client with interactions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientDetail"
+        "404":
+          description: Not found
+    put:
+      operationId: updateClient
+      tags: [clients]
+      summary: Update a client
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+    delete:
+      operationId: deleteClient
+      tags: [clients]
+      summary: Delete a client
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /clients/pipeline/summary:
+    get:
+      operationId: getPipelineSummary
+      tags: [clients]
+      summary: Get pipeline summary stats
+      responses:
+        "200":
+          description: Pipeline summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PipelineSummary"
+
+  /interactions:
+    post:
+      operationId: createInteraction
+      tags: [interactions]
+      summary: Log a new interaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InteractionInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Interaction"
+
+  /interactions/client/{clientId}:
+    get:
+      operationId: getClientInteractions
+      tags: [interactions]
+      summary: Get interactions for a client
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Interactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Interaction"
+
+  /tasks/generate-email:
+    post:
+      operationId: generateEmail
+      tags: [tasks]
+      summary: Generate follow-up email for a client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskRequest"
+      responses:
+        "200":
+          description: Generated content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AIResult"
+
+  /tasks/draft-objection:
+    post:
+      operationId: draftObjection
+      tags: [tasks]
+      summary: Draft objection handling response
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ObjectionRequest"
+      responses:
+        "200":
+          description: Generated content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AIResult"
+
+  /tasks/suggest-steps:
+    post:
+      operationId: suggestSteps
+      tags: [tasks]
+      summary: Suggest next steps for a deal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskRequest"
+      responses:
+        "200":
+          description: Generated content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AIResult"
+
+  /tasks/generate-summary:
+    post:
+      operationId: generateSummary
+      tags: [tasks]
+      summary: Generate interaction summary for a client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskRequest"
+      responses:
+        "200":
+          description: Generated content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AIResult"
+
+  /analytics/month-summary:
+    get:
+      operationId: getMonthSummary
+      tags: [analytics]
+      summary: Get current month cost summary
+      responses:
+        "200":
+          description: Month summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonthSummary"
+
+  /analytics/daily-costs:
+    get:
+      operationId: getDailyCosts
+      tags: [analytics]
+      summary: Get daily costs for last 30 days
+      responses:
+        "200":
+          description: Daily costs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DailyCost"
+
+  /analytics/usage-logs:
+    get:
+      operationId: getUsageLogs
+      tags: [analytics]
+      summary: Get recent API usage logs
+      responses:
+        "200":
+          description: Usage logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UsageLog"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +307,318 @@ components:
       required:
         - status
 
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required:
+        - success
+
+    ClientMemory:
+      type: object
+      properties:
+        decision_makers:
+          type: array
+          items:
+            type: string
+        objections:
+          type: array
+          items:
+            type: string
+        notes:
+          type: ["string", "null"]
+
+    Client:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        company:
+          type: ["string", "null"]
+        industry:
+          type: ["string", "null"]
+        budget:
+          type: ["string", "null"]
+        timeline:
+          type: ["string", "null"]
+        deal_stage:
+          type: string
+        memory:
+          $ref: "#/components/schemas/ClientMemory"
+        created_at:
+          type: string
+        updated_at:
+          type: string
+      required:
+        - id
+        - name
+        - deal_stage
+
+    ClientInput:
+      type: object
+      properties:
+        name:
+          type: string
+        company:
+          type: ["string", "null"]
+        industry:
+          type: ["string", "null"]
+        budget:
+          type: ["string", "null"]
+        timeline:
+          type: ["string", "null"]
+        deal_stage:
+          type: string
+      required:
+        - name
+
+    ClientUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        company:
+          type: ["string", "null"]
+        industry:
+          type: ["string", "null"]
+        budget:
+          type: ["string", "null"]
+        timeline:
+          type: ["string", "null"]
+        deal_stage:
+          type: string
+        memory:
+          $ref: "#/components/schemas/ClientMemory"
+
+    Interaction:
+      type: object
+      properties:
+        id:
+          type: string
+        client_id:
+          type: string
+        type:
+          type: string
+        content:
+          type: string
+        generated_by_model:
+          type: ["string", "null"]
+        cost:
+          type: ["number", "null"]
+        timestamp:
+          type: string
+      required:
+        - id
+        - client_id
+        - type
+        - content
+
+    InteractionInput:
+      type: object
+      properties:
+        client_id:
+          type: string
+        type:
+          type: string
+        content:
+          type: string
+        generated_by_model:
+          type: ["string", "null"]
+        cost:
+          type: ["number", "null"]
+      required:
+        - client_id
+        - type
+        - content
+
+    ClientDetail:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        company:
+          type: ["string", "null"]
+        industry:
+          type: ["string", "null"]
+        budget:
+          type: ["string", "null"]
+        timeline:
+          type: ["string", "null"]
+        deal_stage:
+          type: string
+        memory:
+          $ref: "#/components/schemas/ClientMemory"
+        interactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Interaction"
+        created_at:
+          type: string
+        updated_at:
+          type: string
+      required:
+        - id
+        - name
+        - deal_stage
+        - interactions
+
+    PipelineSummary:
+      type: object
+      properties:
+        total_deals:
+          type: integer
+        total_pipeline_value:
+          type: string
+        by_stage:
+          type: array
+          items:
+            $ref: "#/components/schemas/StageCount"
+        monthly_cost:
+          type: number
+        won_this_month:
+          type: integer
+      required:
+        - total_deals
+        - by_stage
+        - monthly_cost
+        - won_this_month
+
+    StageCount:
+      type: object
+      properties:
+        stage:
+          type: string
+        count:
+          type: integer
+      required:
+        - stage
+        - count
+
+    TaskRequest:
+      type: object
+      properties:
+        client_id:
+          type: string
+      required:
+        - client_id
+
+    ObjectionRequest:
+      type: object
+      properties:
+        client_id:
+          type: string
+        objection:
+          type: string
+      required:
+        - client_id
+        - objection
+
+    AIResult:
+      type: object
+      properties:
+        content:
+          type: string
+        model:
+          type: string
+        cost:
+          type: string
+        tokens_used:
+          type: integer
+      required:
+        - content
+        - model
+        - cost
+        - tokens_used
+
+    MonthSummary:
+      type: object
+      properties:
+        total_cost:
+          type: number
+        task_count:
+          type: integer
+        avg_cost:
+          type: number
+        by_model:
+          type: array
+          items:
+            $ref: "#/components/schemas/ModelStat"
+        by_type:
+          type: array
+          items:
+            $ref: "#/components/schemas/TypeStat"
+      required:
+        - total_cost
+        - task_count
+        - avg_cost
+        - by_model
+        - by_type
+
+    ModelStat:
+      type: object
+      properties:
+        model_used:
+          type: string
+        count:
+          type: integer
+        total_cost:
+          type: number
+      required:
+        - model_used
+        - count
+        - total_cost
+
+    TypeStat:
+      type: object
+      properties:
+        task_type:
+          type: string
+        count:
+          type: integer
+        avg_cost:
+          type: number
+        total_cost:
+          type: number
+      required:
+        - task_type
+        - count
+        - avg_cost
+        - total_cost
+
+    DailyCost:
+      type: object
+      properties:
+        date:
+          type: string
+        daily_cost:
+          type: number
+      required:
+        - date
+        - daily_cost
+
+    UsageLog:
+      type: object
+      properties:
+        id:
+          type: string
+        task_type:
+          type: string
+        model_used:
+          type: string
+        cost:
+          type: number
+        tokens_used:
+          type: ["integer", "null"]
+        created_at:
+          type: string
+      required:
+        - id
+        - task_type
+        - model_used
+        - cost
+        - created_at
